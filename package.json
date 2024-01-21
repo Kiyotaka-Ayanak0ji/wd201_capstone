@@ -1,0 +1,12 @@
+{
+  "name": "wd201_capstone",
+  "version": "1.0.0",
+  "description": "A LMS(Learning Management System) for students and teachers.",
+  "main": "index.js",
+  "scripts": {
+    "start:prod": "node index.js",
+    "test": "npm test"
+  },
+  "author": "",
+  "license": "ISC"
+}
