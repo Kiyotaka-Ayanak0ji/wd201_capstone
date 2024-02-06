@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <a class="text-left"></a>
+    <h1 class="font-sans">Create New Course</h1>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link href = './css/styles.css' rel="stylesheet">
+</head>
+
+<body class="font-sans bg-gray-100">
+    <div class="container mx-auto mt-8 p-4 bg-white rounded-md shadow-md text-center">
+        <%- include('notifications.ejs') %>
+        <h2 class="text-3xl font-bold mb-6">Chapter Created Successfully!</h2>
+        
+        <a href="/add-chapter/<%= sendId.id %>" class="bg-black text-white px-8 py-4  font-bold hover:bg-gray-900 mb-4 inline-block">Add new Chapter</a>
+        
+        <a href="/dashboard" class="bg-black text-white px-8 py-4  font-bold hover:bg-gray-900 mb-4 inline-block">Return to Dashboard</a>
+        
+        <a href="/view-course/<%= sendId.id %>" class="bg-black text-white px-8 py-4  font-bold hover:bg-gray-900 mb-4 inline-block">Go to Course overview</a>
+    </div>
+</body>

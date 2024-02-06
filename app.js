@@ -32,6 +32,10 @@ app.use(
 //Set view Engine as EJS
 app.set("view engine", "ejs");
 
+localStorage = new LocalStrategy(){
+  
+}
+
 app.use(express.static(path.join(__dirname, "public")));
 app.use(flash());
 app.use(bodyParser.json());
@@ -173,5 +177,15 @@ app.get('/login',(req,res) => {
 });
 
 app.get('/signout',(req,res) => {
+  response.render("signin", {
+    title: "Sign In",
+    csrfToken: request.csrfToken(),
+  });
+});
 
+app.get("/signup", (request, response) => {
+  response.render("signup", {
+    title: "Sign Up",
+    csrfToken: request.csrfToken(),
+  });
 });

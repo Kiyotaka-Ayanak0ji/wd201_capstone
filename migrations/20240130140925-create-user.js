@@ -4,11 +4,11 @@
 module.exports = {
   async up (queryInterface, Sequelize) {
       
-    await queryInterface.addColumn("Educators", "course_id", {
+    await queryInterface.addColumn("Users", "course_id", {
       type: Sequelize.DataTypes.INTEGER,
     });
 
-    await queryInterface.addConstraint("Educators", {
+    await queryInterface.addConstraint("Users", {
       fields: ["course_id"],
       type: "foreign key",
       references: {
