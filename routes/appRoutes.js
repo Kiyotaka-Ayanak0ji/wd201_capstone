@@ -20,6 +20,19 @@ router.get("/", async (req, res) => {
   }
 });
 
+// router.get('/reports',connectEnsureLogin.ensureLoggedIn(),async(request,response) => {
+//   if(request.isAuthenticated()) {
+//     if(req.user.userType === "educator"){
+//       let courses = await 
+//       let chapters_completed = await Chapter.findAll({
+//         where:{
+//           courseId: r
+//         }
+//       })
+//     }
+//   }
+// })
+
 router.get(
   "/dashboard",
   connectEnsureLogin.ensureLoggedIn(),
