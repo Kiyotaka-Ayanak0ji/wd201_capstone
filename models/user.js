@@ -1,7 +1,5 @@
-'use strict';
-const {
-  Model
-} = require('sequelize');
+"use strict";
+const { Model, Sequelize } = require("sequelize");
 module.exports = (sequelize, DataTypes) => {
   class User extends Model {
     /**
@@ -10,21 +8,71 @@ module.exports = (sequelize, DataTypes) => {
      * The `models/index` file will call this method automatically.
      */
     static associate(models) {
-      User.hasMany(models.courses, {
-        foreignKey: "course_id",
-      })
+      User.belongsToMany(models.Course, {
+        through: models.Enroll,
+        foreignKey: "userId",
+      });
+      User.belongsToMany(models.Page, {
+        through: models.MarkComplete,
+        foreignKey: "userId",
+      });
     }
   }
-  User.init({
-    Id: DataTypes.INTEGER,
-    role: DataTypes.STRING,
-    faculty_id: DataTypes.INTEGER,
-    Name: DataTypes.STRING,
-    Age: DataTypes.INTEGER,
-    Department: DataTypes.STRING
-  }, {
-    sequelize,
-    modelName: 'User',
-  });
+  User.init(
+    {
+      id: {
+        allowNull: false,
+        autoIncrement: true,
+        primaryKey: true,
+        type: Sequelize.INTEGER,
+      },
+      firstName: {
+        type: Sequelize.STRING,
+        allowNull: false,
+        validate: {
+          notNull: true,
+          notEmpty: true,
+        },
+      },
+      lastName: {
+        type: Sequelize.STRING,
+      },
+      email: {
+        type: Sequelize.STRING,
+        allowNull: false,
+        unique: true,
+        validate: {
+          notNull: true,
+          notEmpty: true,
+        },
+      },
+      password: {
+        type: Sequelize.STRING,
+        allowNull: false,
+        validate: {
+          notEmpty: true,
+        },
+      },
+      userType: {
+        type: Sequelize.ENUM("student", "educator"),
+        allowNull: false,
+        validate: {
+          notNull: true,
+        },
+      },
+      createdAt: {
+        allowNull: false,
+        type: Sequelize.DATE,
+      },
+      updatedAt: {
+        allowNull: false,
+        type: Sequelize.DATE,
+      },
+    },
+    {
+      sequelize,
+      modelName: "User",
+    }
+  );
   return User;
 };

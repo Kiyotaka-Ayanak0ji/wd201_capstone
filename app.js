@@ -1,191 +1,79 @@
-const express = require('express');
+const express = require("express");
 const app = express();
-var csrf = require('tiny-csrf');
-var cookieParser = require("cookie-parser");
-const bodyParser = require("body-parser");
-const path = require("path");
-app.set("views", path.join(__dirname, "views"));
-const { request } = require("http");
-const flash = require("connect-flash");
-
-const passport = require("passport");
-const connectEnsureLogin = require("connect-ensure-login");
+const csurf = require("tiny-csrf");
+const cookieParser = require("cookie-parser");
 const session = require("express-session");
+const flash = require("connect-flash");
+const passport = require("passport");
 const LocalStrategy = require("passport-local");
 const bcrypt = require("bcrypt");
+const path = require("path");
+const appRoutes = require("./routes/appRoutes");
+const authRoutes = require("./routes/authRoutes");
+const { User } = require("./models");
 
-let agent,server;
-
-const saltRounds = 10;
-
+// Middlewares
+app.use(express.static(__dirname + "/public"));
+app.use(express.json());
+app.set("views", path.join(__dirname, "views"));
+app.use(express.urlencoded({ extended: false }));
+app.set("view engine", "ejs");
+app.use(cookieParser("n*_h!bR?tr1t095a*l&1Tr0d7QAsPlcI"));
+app.use(flash());
 app.use(
   session({
-    secret: "my-super-secret-key-21728172615261562",
-    cookie: {
-      maxAge: 24 * 60 * 60 * 1000,
-    },
+    secret: "3!i9O1Ithi_uxl$$uB2uSt32aMa*0Ige",
     resave: false,
     saveUninitialized: false,
-  }),
+    cookie: { maxAge: 24 * 60 * 60 * 1000 },
+  })
 );
-
-//Set view Engine as EJS
-app.set("view engine", "ejs");
-
-localStorage = new LocalStrategy(){
-  
-}
-
-app.use(express.static(path.join(__dirname, "public")));
-app.use(flash());
-app.use(bodyParser.json());
-app.use(express.urlencoded({ extended: false }));
-app.use(cookieParser("shhh! Some Secret String"));
-app.use(csrf("this_should_be_32_character_long", ["POST", "PUT", "DELETE"]));
-
+app.use(csurf("trofrUzA?rUzu2rLP4Lv&pif$lXepHAv", ["POST", "PUT", "DELETE"]));
 app.use(function (request, response, next) {
   response.locals.messages = request.flash();
   next();
 });
 
-
-app.use(passport.initialize());
-app.use(passport.session());
-
+// Passport setup
 passport.use(
   new LocalStrategy(
     {
       usernameField: "email",
       passwordField: "password",
     },
-    (username, password, done) => {
-      User.findOne({
-        where: {
-          email: username,
-        },
-      })
-        .then(async (user) => {
-          const result = await bcrypt.compare(password, user.password);
-          if (result) {
-            return done(null, user);
-          } else {
-            return done(null, false, { message: "Invalid Password !" });
-          }
-        })
-        .catch((error) => {
-          return done(error);
-        });
-    },
-  ),
+    async function (username, password, done) {
+      console.log("LSAF");
+      const user = await User.findOne({ where: { email: username } });
+      if (user === null)
+        return done(null, false, { message: "User does not exist" });
+      const result = await bcrypt.compare(password, user.password);
+      if (result) return done(null, user);
+      else done(null, false, { message: "Invalid password" });
+    }
+  )
 );
 
 passport.serializeUser((user, done) => {
-  console.log("Serializing user in session", user.id);
+  console.log("Serialize user in session:", user.id);
   done(null, user.id);
 });
 
-passport.deserializeUser((id, done) => {
-  User.findByPk(id)
+passport.deserializeUser(async (id, done) => {
+  console.log("DeSerialize user:", id);
+  await User.findByPk(id)
     .then((user) => {
       done(null, user);
     })
-    .catch((error) => {
-      done(error, null);
+    .catch((err) => {
+      done(err, null);
     });
 });
 
-app.post('/courses',(req,res) => {
-  
-})
+app.use(passport.initialize());
+app.use(passport.session());
 
+// Routes
+app.use(appRoutes);
+app.use(authRoutes);
 
-app.get("/login", (request, response) => {
-    response.render("login", { title: "LMS Login", csrfToken: request.csrfToken() });
-  });
-  
-  app.get("/signout", (request, response) => {
-    //Signout
-    request.logout((err) => {
-      if (err) {
-        return next(err);
-      }
-      response.redirect("/");
-    });
-  });
-  
-  app.get("/", (req, res) => {
-    if (req.isAuthenticated()) {
-      return res.redirect("/todos");
-    }
-    if (req.accepts("html")) {
-      return res.render("index", {
-        csrfToken: req.csrfToken(),
-      });
-    }
-});
-
-app.post(
-    "/session",
-    passport.authenticate("local", {
-      failureRedirect: "/login",
-      failureFlash: true,
-    }),
-    (request, response) => {
-      console.log(request.user);
-      request.flash("error");
-      response.redirect("/todos");
-    },
-);
-
-passport.serializeUser((user, done) => {
-    console.log("Serializing user in session", user.id);
-    done(null, user.id);
-});
-
-passport.deserializeUser((id, done) => {
-    User.findByPk(id)
-      .then((user) => {
-        done(null, user);
-      })
-      .catch((error) => {
-        done(error, null);
-      });
-});
-
-app.get("/", async (request, response) => {
-    response.render("index", {
-      title: "LMS",
-      csrfToken: request.csrfToken(),
-    });
-});
-
-app.get("/", (req, res) => {
-    if (req.isAuthenticated()) {
-      return res.redirect("/todos");
-    }
-    if (req.accepts("html")) {
-      return res.render("index", {
-        csrfToken: req.csrfToken(),
-      });
-    }
-});
-
-app.get('/login',(req,res) => {
-    if(request.accepts('html')){
-        response.render('login',{title:'LMS'});
-    }
-});
-
-app.get('/signout',(req,res) => {
-  response.render("signin", {
-    title: "Sign In",
-    csrfToken: request.csrfToken(),
-  });
-});
-
-app.get("/signup", (request, response) => {
-  response.render("signup", {
-    title: "Sign Up",
-    csrfToken: request.csrfToken(),
-  });
-});
+module.exports = app;

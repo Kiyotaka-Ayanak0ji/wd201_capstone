@@ -1,8 +1,5 @@
-'use strict';
-const {
-  Model
-} = require('sequelize');
-const educator = require('./educator');
+"use strict";
+const { Model } = require("sequelize");
 module.exports = (sequelize, DataTypes) => {
   class Course extends Model {
     /**
@@ -11,38 +8,51 @@ module.exports = (sequelize, DataTypes) => {
      * The `models/index` file will call this method automatically.
      */
     static associate(models) {
-      Course.belongsTo(models.User,{
-        foreignKey: "course_id",
+      // define association here
+      Course.belongsTo(models.User, {
+        foreignKey: "userId",
+      });
+      Course.belongsToMany(models.User, {
+        through: models.Enroll,
+        foreignKey: "courseId",
+      });
+      Course.hasMany(models.Chapter, {
+        onDelete: "CASCADE",
+        foreignKey: "courseId",
       });
     }
-
-    static createCourse(course_id,Name,completed){
-      return this.create({
-        course_id: course_id,
-        Name: Name,
-        completed: completed,
-        chapters: 0,
-        pages: 0,
-      });
-    }
-    
-    static deleteCourse(course_id){
-      return this.destroy({
-        where: {
-          course_id: course_id,
+    static async deleteCourse(id) {
+      try {
+        const chapters = await sequelize.models.Chapter.findAll({
+          where: {
+            courseId: id,
+          },
+        });
+        for (let i = 0; i < chapters.length; i++) {
+          const chapter = chapters[i];
+          await chapter.destroy();
         }
-      });
+        const course = await this.findByPk(id);
+        if (!course) {
+          throw new Error("Course not found");
+        }
+        await course.destroy();
+        return true;
+      } catch (error) {
+        console.log("Error deleting course:", error.message);
+        return false;
+      }
     }
   }
-  Course.init({
-    course_id: DataTypes.INTEGER,
-    Name: DataTypes.STRING,
-    completed: DataTypes.BOOLEAN,
-    chapters: DataTypes.INTEGER,
-    pages: DataTypes.INTEGER,
-  }, {
-    sequelize,
-    modelName: 'Course',
-  });
+  Course.init(
+    {
+      name: DataTypes.STRING,
+      userId: DataTypes.INTEGER,
+    },
+    {
+      sequelize,
+      modelName: "Course",
+    }
+  );
   return Course;
 };
