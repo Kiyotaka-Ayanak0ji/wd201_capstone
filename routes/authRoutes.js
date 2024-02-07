@@ -45,8 +45,8 @@ router.post("/users", async (req, res) => {
       res.status(301).redirect("/dashboard");
     });
   } catch (error) {
-    console.log(error);
-    res.status(401).json({ message: error });
+    console.log(error.errors[0].message);
+    res.status(401).json({ message: error.errors[0].message });
   }
 });
 
