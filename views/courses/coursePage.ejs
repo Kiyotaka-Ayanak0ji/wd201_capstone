@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+    <script src="https://cdn.tailwindcss.com/3.4.1"></script>
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css"
+    />
+  </head>
+  <body>
+    <header class="flex items-center justify-evenly w-[90%] m-auto">
+      <a
+        href="/dashboard"
+        class="bg-green-700 text-white rounded px-4 py-2 ml-8"
+        >Home</a
+      >
+      <h1 class="my-12 font-bold text-4xl"><%= name %></h1>
+      <% if(courseOwner) { %>
+      <a
+        href="/courses/<%=courseID%>/chapters/new"
+        class="border-blue-700 border rounded px-4 py-2 bg-blue-700 text-white hover:bg-white hover:text-blue-700"
+        >Add a chapter</a
+      >
+      <button
+        onclick="deleteCourse()"
+        class="border-red-700 border rounded px-4 py-2 bg-red-700 text-white hover:bg-white hover:text-red-700"
+      >
+        Delete Course
+      </button>
+      <% } %>
+    </header>
+    <hr class="h-1 w-[80%] m-auto bg-gray-200 border-0 dark:bg-gray-700" />
+    <main>
+      <% if (chapters.length === 0) { %>
+      <p class="text-xl text-center my-8">This course has no chapters.<br /></p>
+      <% } %>
+      <ul class="w-[75%] m-auto my-6">
+        <% chapters.forEach((chapter) => { %>
+        <li
+          class="my-4 bg-slate-200 py-2 px-4 rounded hover:bg-slate-300 flex justify-between items-center"
+        >
+          <a href="/chapters/<%= chapter.id %>" class="w-full">
+            <div>
+              <p class="text-xl"><%=chapter.name%></p>
+              <div class="px-6 py-1"><%= chapter.description %></div>
+            </div>
+          </a>
+        </li>
+        <% }) %>
+      </ul>
+    </main>
+    <script>
+      console.log("<%= csrfToken%>");
+      async function deleteCourse() {
+        if (confirm("ARE YOU SURE YOU WANT TO DELETE THIS COURSE?")) {
+          const res = await fetch("/course", {
+            method: "delete",
+            headers: {
+              "Content-Type": "application/json",
+              "X-CSRFToken": "<%= csrfToken %>",
+            },
+            body: JSON.stringify({
+              _csrf: "<%= csrfToken %>",
+              courseId: Number("<%= courseID %>"),
+            }),
+          });
+          const resData = await res.text();
+          console.log(res.url);
+          window.location = res.url;
+        }
+      }
+      async function deleteChapter(id) {
+        console.log("<%= csrfToken %>");
+        const res = await fetch("/chapter", {
+          method: "delete",
+          headers: {
+            "Content-Type": "application/json",
+            "X-CSRFToken": "<%= csrfToken %>",
+          },
+          body: JSON.stringify({
+            _csrf: "<%= csrfToken %>",
+            id: id,
+          }),
+        });
+        window.location.reload();
+      }
+    </script>
+  </body>
+</html>
