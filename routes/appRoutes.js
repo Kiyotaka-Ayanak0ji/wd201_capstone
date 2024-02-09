@@ -9,7 +9,7 @@ const {
   Enroll,
   MarkComplete,
 } = require("../models");
-const { Op } = require("sequelize");
+const { Op, where } = require("sequelize");
 const bcrypt = require("bcrypt");
 
 router.get("/", async (req, res) => {
@@ -20,18 +20,90 @@ router.get("/", async (req, res) => {
   }
 });
 
-// router.get('/reports',connectEnsureLogin.ensureLoggedIn(),async(request,response) => {
-//   if(request.isAuthenticated()) {
-//     if(req.user.userType === "educator"){
-//       let courses = await 
-//       let chapters_completed = await Chapter.findAll({
-//         where:{
-//           courseId: r
-//         }
-//       })
-//     }
-//   }
-// })
+router.get('/reports',connectEnsureLogin.ensureLoggedIn(),async(request,response) => {
+  try{  
+    if(request.isAuthenticated()) {
+      if(req.user.userType === "educator"){
+        
+        let students = await User.findAll({
+          userType: "student",   
+        });
+
+        let completed_students = [];
+
+        for(let i = 0 ; i < students.length ; i++){
+          let total_pages = await Page.findAll({
+            where:{
+              userId: i.id,
+            }
+          });
+          
+          let completed_chapters = [];
+    
+          for(let i = 0 ; i < total_pages.length ;i++){
+            let pages = await MarkComplete.findAll({
+              where:{
+                pageId: i.pageId
+              }
+            });
+            let sorted = Array(pages).sort((a,b)=> a.pageId < b.pageId);
+            if(Array(total_pages).includes(sorted[0]) && Array(total_pages).includes(sorted[sorted.length-1])){
+              completed_chapters.push(pages[0].chapterId);
+            }
+          }
+    
+          //Cheking courses..
+          let total_chapters = await Chapter.findAll({
+            where: {
+              userId: i.id
+            }
+          });
+    
+          let completed_courses = [];
+          for(let i = 0 ; i < total_chapters.length ; i++){
+            let chapters = await completed_chapters.findAll({
+              where:{
+                chapterId: i.chapterId
+              }
+            });
+            let sorted = Array(chapters).sort((a,b)=> a.chapterId < b.chapterId);
+            
+            if(Array(total_chapters).includes(sorted[0]) && Array(total_chapters).includes(sorted[sorted.length-1])){
+              completed_courses.push(chapters[0].courseID);
+            }
+          }
+    
+          let total_courses = await Course.findAll({
+            where:{
+              userId:i.id,
+            }
+          })
+    
+          let completion = total_courses.length*100;
+          completion /= completed_courses.length;
+
+          completed_students.push([i,completion]);
+        }
+        
+
+        if(request.accepts("html")){
+          response.render("report",{
+            users: completed_students,
+            csrfToken: request.csrfToken(),
+          });
+        }
+        else{
+          response.json({
+            completed_students
+          })
+        }
+      }
+    }
+  }catch(err){
+    console.error(err);
+    return response.status(500).send("Internal Server Error");
+  }
+})
 
 router.get(
   "/dashboard",

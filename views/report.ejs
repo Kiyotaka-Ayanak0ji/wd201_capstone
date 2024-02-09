@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="csrfToken" content="<%= csrfToken %>" />
+    <script src="https://cdn.tailwindcss.com/3.4.1"></script>
+    
+    <body>
+        <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+        <div class="flex w-full text-m border border-brown-500 mx-auto px-2 py-2">
+            <ul>
+                <%- for(let i = 0 ; i < users.length ;i++){ %>
+                    <li>
+                        <p class="text-semibold">Report for <%= users[i][0].firstName %> <%= users[i][0].lastName %> </p>
+                        <div class="mx-auto w-full px-1 py-1 flex flex-col box-border">
+                            <p class="text-semibold"><%= users[i][1] %></p>
+                        </div>
+                    </li>
+                <% } %>
+
+            </ul>
+        </div>
+        
+    </body>
+</html>
