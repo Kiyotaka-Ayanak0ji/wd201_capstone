@@ -108,7 +108,7 @@ router.get(
   connectEnsureLogin.ensureLoggedIn(),
   async (req, res) => {
     if (req.isAuthenticated()) {
-      if (request.userType === "educator") {
+      if (req.userType === "educator") {
         let myCourses = await Course.findAll({
           where: { userId: req.user.id },
           include: User,
