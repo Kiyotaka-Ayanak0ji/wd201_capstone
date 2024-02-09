@@ -22,7 +22,7 @@ router.get("/", async (req, res) => {
 
 router.get('/reports',connectEnsureLogin.ensureLoggedIn(),async(request,response) => {
   try{  
-    if(req.user.userType === "educator"){
+    if(request.user.userType === "educator"){
       
       let students = await User.findAll({
         userType: "student",   
@@ -108,7 +108,7 @@ router.get(
   connectEnsureLogin.ensureLoggedIn(),
   async (req, res) => {
     if (req.isAuthenticated()) {
-      if (req.user.userType === "educator") {
+      if (uest.userType === "educator") {
         let myCourses = await Course.findAll({
           where: { userId: req.user.id },
           include: User,
